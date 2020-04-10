@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<style>
+
+</style>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <title>Income Statement</title>
+   <!-- the star of the show - the Vue library! -->
+   <script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+   
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+   
+   <script>
+				
+			function getFormattedDate(date) {
+						  var year = date.getFullYear();
+
+						  var month = (1 + date.getMonth()).toString();
+						  month = month.length > 1 ? month : '0' + month;
+
+						  var day = date.getDate().toString();
+						  day = day.length > 1 ? day : '0' + day;
+						  
+						  return year + '-' + month + '-' + day;
+						}
+        document.addEventListener('DOMContentLoaded', function () {
+            
+			var app = new Vue({
+			  el: '#app',
+			  data:{
+					  income_statement : {},
+					  fromdate:'2016-09-01',
+					  todate:getFormattedDate(new Date())
+			  },
+			  created() {
+			
+			 axios
+				  .get('http://127.0.0.1:5000/income-statements/2016-09-01-to-2016-09-05.json')
+				  .then(response => (this.income_statement = response.data))
+			  },
+		    methods:{
+				submitForm: function (e) {
+					
+					console.log(this.fromdate)
+					console.log(this.todate)
+				  if (this.fromdate && this.todate ) {
+				  axios
+				  .get('http://127.0.0.1:5000/income-statements/'+this.fromdate+'-to-'+this.todate+'.json')
+				  .then(response => (this.income_statement = response.data))
+					
+					
+					
+				  }
+
+				  this.errors = [];
+
+				  if (!this.fromdate) {
+					this.errors.push('fromdate required.');
+				  }
+				  if (!this.todate) {
+					this.errors.push('todate required.');
+				  }
+				 
+
+				  e.preventDefault();
+				}
+			}
+			})
+			
+			
+			
+			//end tag
+			
+			
+	        })
+		
+		
+		
+		
+   </script>
+</head>
+<body>
+
+    
+<div id="app">
+
+<div class="row justify-content-end" >
+  From Date: <div class="col-sm-2 ">  <input type="date" dateformat="yyyy-MM-dd"  class="form-control" id="recipient-name" v-model="fromdate"></div>
+  To Date:<div class="col-sm-2">  <input type="date" dateformat="yyyy-MM-dd"  class="form-control" id="recipient-name" v-model="todate"></div>
+  <div class="col-sm-6 justify-content-bottom"><button type="button" class="btn btn-primary" @click="submitForm" >Get Statement</button>  </div>
+</div>
+
+
+  <div class="container">
+		<h1>Income Statement from {{ income_statement.start_date }} to {{ income_statement.end_date }}</h1>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="number">Number</th>
+          <th>Name</th>
+          <th class="balance">Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+				<tr><td></td><td colspan="2">Revenues</td></tr>
+        
+          <tr  v-for="revenue in income_statement.revenue">
+            <td class="number">{{ revenue.code }}</td>
+            <td>&nbsp;&nbsp;{{ revenue.name }}</td>
+            <td class="balance">{{ -revenue.balance  }}</td>
+          </tr>
+       
+        <tr class="total">
+          <td></td>
+          <td>&nbsp;&nbsp;Total Revenues</td>
+          <td class="balance">{{ income_statement.total_revenues  }}</td>
+        </tr>
+
+				<tr><td></td><td colspan="2">Expenses</td></tr>
+        
+          <tr  v-for="expense in income_statement.expense">
+            <td class="number">{{ expense.code }}</td>
+            <td>&nbsp;&nbsp;{{ expense.name }}</td>
+            <td class="balance">{{ expense.balance  }}</td>
+          </tr>
+      
+        <tr class="total">
+          <td></td>
+          <td>&nbsp;&nbsp;Total Expenses</td>
+          <td class="balance">{{ income_statement.total_expenses  }}</td>
+        </tr>
+        <tr class="total">
+          <td></td>
+					<td  v-if="income_statement.net_income > 0" >
+						
+							Net Income
+					
+					</td>
+					<td  v-if="income_statement.net_income <= 0" >
+					Net Loss
+						</td>
+          <td class="balance" v-if="income_statement.net_income > 0">
+						
+							{{ income_statement.net_income  }}
+						
+							
+					</td>
+		 <td class="balance" v-if="income_statement.net_income <= 0">
+						
+							{{ income_statement.net_loss  }}
+						
+					</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  </div>
+
+
+
+
+
+</body>
+</html>
