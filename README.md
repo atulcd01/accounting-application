@@ -12,3 +12,10 @@ _simplicity_. Currently it allows you to:
 ## Installation
 
 You need Python Python 3.x.x
+
+
+RoadMap
+
+1. trying to add ui frame vue.js 
+2. convert it into microservice
+3. having a user login to view balanace sheet
