@@ -32,14 +32,107 @@ th {
    <meta charset="UTF-8">
    <title>Transaction</title>
    <!-- the star of the show - the Vue library! -->
-   <script src="https://unpkg.com/vue/dist/vue.min.js"></script>
-   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+   <script src="js/vue.min.js"></script>
+   <script src="js/axios.min.js"></script>
    
-   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+   <link rel="stylesheet" href="js/bootstrap.min.css">
+  <script src="js/jquery.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
    
+
+</head>
+<body>
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">New Transaction</button>  
+   <div id="app">
+ 
+ 
+  <table id="example" class="table " style="width:100%">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Credit Account</th>
+                <th>Debit Account</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="transaction in info">
+			
+                <td>{{transaction.date}}</td>
+                <td>{{transaction.description}}</td>
+                 <td>{{accMap.get(transaction.items[0].account_code)}}</td>
+                 <td>{{accMap.get(transaction.items[1].account_code)}}</td>
+				 <td>{{transaction.items[0].amount}}</td>
+            </tr>
+            
+        </tbody>
+       
+    </table>
+</div>
+
+
+
+
+<div id= "modal">
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">New Transaction</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form  @submit="submitForm" method="post" ref="form">
+		<p v-if="errors.length">
+				
+				<ul class="list-group">
+				  <li class="list-group-item list-group-item-danger" v-for="error in errors">{{ error }}</li>
+				</ul>
+			  </p>
+          <div class="form-group">
+            <label for="recipient-name" class="col-form-label">Date:</label>
+            <input type="date" dateformat="yyyy-MM-dd"  class="form-control" id="recipient-name" v-model="transaction.date">
+          </div>
+		  <div class="form-group">
+            <label for="recipient-name" class="col-form-label">From Account:</label>
+           
+			<select class="browser-default custom-select"  id="recipient-type"  v-model="transaction.accountdebit" >
+			  <option v-for="a in accounts">{{a[0]}}~{{a[1]}}</option>
+			</select>
+          </div>
+		  <div class="form-group">
+            <label for="recipient-name" class="col-form-label">To Account:</label>
+			<select class="browser-default custom-select"  id="recipient-type"  v-model="transaction.accountcredit" >
+			  <option v-for="a in accounts">{{a[0]}}~{{a[1]}}</option>
+			</select>
+            
+          </div>
+		  <div class="form-group">
+            <label for="recipient-name" class="col-form-label">Amount</label>
+            <input type="number" class="form-control" id="recipient-name" v-model="transaction.amount">
+          </div>
+          <div class="form-group">
+            <label for="message-text" class="col-form-label">Description:</label>
+            <textarea class="form-control" id="message-text" v-model="transaction.description"></textarea>
+          </div>
+		  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+		    <input type="submit" class="btn btn-primary"></input>
+        </form>
+      </div>
+      
+    </div>
+  </div>
+</div>
+</div>
+
+</body>
+</html>
+
+
    <script>
 
 function getFormattedDate(date) {
@@ -55,9 +148,9 @@ function getFormattedDate(date) {
 						}
 
         // when life is settled, load up the fun stuff
-        document.addEventListener('DOMContentLoaded', function () {
+
             
-			var app = new Vue({
+			var transaction_app = new Vue({
 			  el: '#app',
 			  data:{
 				
@@ -73,7 +166,7 @@ function getFormattedDate(date) {
 					 modal.accounts =  response.data.accounts;
 					  for (a of  modal.accounts) {
 						console.log(a[1]);
-						app.accMap.set(a[0], a[1]);
+						transaction_app.accMap.set(a[0], a[1]);
 						}
 						console.log(app.accMap);
 					})
@@ -119,8 +212,8 @@ function getFormattedDate(date) {
 					  "date":this.transaction.date,
 					  "description":this.transaction.description,
 					  "items":[
-						{"account_code":this.transaction.accountdebit.split('-')[0],"amount":+this.transaction.amount},
-						{"account_code":this.transaction.accountcredit.split('-')[0],"amount":-this.transaction.amount}
+						{"account_code":this.transaction.accountdebit.split('~')[0],"amount":+this.transaction.amount},
+						{"account_code":this.transaction.accountcredit.split('~')[0],"amount":-this.transaction.amount}
 					  ]
 					});
 					
@@ -170,99 +263,6 @@ function getFormattedDate(date) {
 				}
 			}
 		})	
-        })
-		
-		
-		
-		
+	
+
    </script>
-</head>
-<body>
-  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">New Transaction</button>  
-   <div id="app">
- 
- 
-  <table id="example" class="table " style="width:100%">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Debit Account</th>
-                <th>Credit Account</th>
-                <th>Amount</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="transaction in info">
-			
-                <td>{{transaction.date}}</td>
-                <td>{{transaction.description}}</td>
-                 <td>{{accMap.get(transaction.items[0].account_code)}}</td>
-                 <td>{{accMap.get(transaction.items[1].account_code)}}</td>
-				 <td>{{transaction.items[1].amount}}</td>
-            </tr>
-            
-        </tbody>
-       
-    </table>
-</div>
-
-
-
-
-<div id= "modal">
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">New Transaction</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <form  @submit="submitForm" method="post" ref="form">
-		<p v-if="errors.length">
-				
-				<ul class="list-group">
-				  <li class="list-group-item list-group-item-danger" v-for="error in errors">{{ error }}</li>
-				</ul>
-			  </p>
-          <div class="form-group">
-            <label for="recipient-name" class="col-form-label">Date:</label>
-            <input type="date" dateformat="yyyy-MM-dd"  class="form-control" id="recipient-name" v-model="transaction.date">
-          </div>
-		  <div class="form-group">
-            <label for="recipient-name" class="col-form-label">From Account:</label>
-           
-			<select class="browser-default custom-select"  id="recipient-type"  v-model="transaction.accountdebit" >
-			  <option v-for="a in accounts">{{a[0]}}- {{a[1]}}</option>
-			</select>
-          </div>
-		  <div class="form-group">
-            <label for="recipient-name" class="col-form-label">To Account:</label>
-			<select class="browser-default custom-select"  id="recipient-type"  v-model="transaction.accountcredit" >
-			  <option v-for="a in accounts">{{a[0]}}- {{a[1]}}</option>
-			</select>
-            
-          </div>
-		  <div class="form-group">
-            <label for="recipient-name" class="col-form-label">Amount</label>
-            <input type="number" class="form-control" id="recipient-name" v-model="transaction.amount">
-          </div>
-          <div class="form-group">
-            <label for="message-text" class="col-form-label">Description:</label>
-            <textarea class="form-control" id="message-text" v-model="transaction.description"></textarea>
-          </div>
-		  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-		    <input type="submit" class="btn btn-primary"></input>
-        </form>
-      </div>
-      
-    </div>
-  </div>
-</div>
-</div>
-
-</body>
-</html>

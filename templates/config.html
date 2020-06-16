@@ -1,19 +1,26 @@
 <!DOCTYPE html>
 <style>
-
+._row  {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    /* margin-right: -15px; */
+    /* margin-left: -15px; */
+}
 </style>
 <html lang="en">
 <head>
    <meta charset="UTF-8">
    <title>Configuration</title>
    <!-- the star of the show - the Vue library! -->
-   <script src="https://unpkg.com/vue/dist/vue.min.js"></script>
-   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+   <script src="js/vue.min.js"></script>
+   <script src="js/axios.min.js"></script>
    
-   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+   <link rel="stylesheet" href="js/bootstrap.min.css">
+  <script src="js/jquery.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
    
    <script>
 				
@@ -31,7 +38,7 @@
 				create: function (e) {
 					axios
 					  .get('http://127.0.0.1:5000/create')
-					  .then()
+					  .then(response => (alert('Created successfully')))
 					  .catch((error) => {
 								console.warn('Not good man :('+error);
 								this.errors.push(error.message);
@@ -40,7 +47,7 @@
 				  drop: function (e) {
 					axios
 					  .get('http://127.0.0.1:5000/drop')
-					  .then()
+					  .then(response => (alert('Drop successfully')))
 					  .catch((error) => {
 								console.warn('Not good man :('+error);
 								this.errors.push(error.message);
@@ -49,12 +56,40 @@
 				  reset: function (e) {
 					axios
 					  .get('http://127.0.0.1:5000/reset')
-					  .then()
+					  .then(response => (alert('Reset successfully')))
+					  .catch((error) => {
+								console.warn('Not good man :('+error);
+								this.errors.push(error.message);
+							})
+				  },
+				  upload: function (e) {
+					axios
+					  .get('http://127.0.0.1:5000/excel')
+					  .then(response => (alert('Excel uploaded successfully')))
+					  .catch((error) => {
+								console.warn('Not good man :('+error);
+								this.errors.push(error.message);
+							})
+				  },
+				  payments: function (e) {
+					axios
+					  .get('http://127.0.0.1:5000/payments')
+					  .then(response => (alert('Payments uploaded successfully')))
+					  .catch((error) => {
+								console.warn('Not good man :('+error);
+								this.errors.push(error.message);
+							})
+				  },
+				  bill: function (e) {
+					axios
+					  .get('http://127.0.0.1:5000/bill')
+					  .then(response => (alert('Bill debited successfully')))
 					  .catch((error) => {
 								console.warn('Not good man :('+error);
 								this.errors.push(error.message);
 							})
 				  }
+
 
 				 
 				}
@@ -78,10 +113,13 @@
     
 <div id="app">
 
-<div class="row justify-content-center" >
+<div class="_row justify-content-center" >
 	<div class="p-3"><button type="button" class="btn btn-primary" @click="create" >Create</button>  </div>
 	<div class="p-3"><button type="button" class="btn btn-primary" @click="drop" >Drop</button>  </div>
   <div class="p-3"><button type="button" class="btn btn-primary" @click="reset" >Reset</button>  </div>
+  <div class="p-3"><button type="button" class="btn btn-primary" @click="upload" >Upload Accounts</button>  </div>
+  <div class="p-3"><button type="button" class="btn btn-primary" @click="bill" >Monthly Bill</button>  </div>
+  <div class="p-3"><button type="button" class="btn btn-primary" @click="payments" >Monthly Payments</button>  </div>
 </div>
 
 

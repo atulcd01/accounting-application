@@ -1,0 +1,77 @@
+<html>
+   <head>
+      <title>VueJs Instance</title>
+      <script type = "text/javascript" src = "js/vue.js"></script>
+      <script type = "text/javascript" src = " https://unpkg.com/vue-router/dist/vue-router.js"></script>
+
+	  <script src="js/axios.min.js"></script>
+   
+   
+    <link rel="stylesheet" href="js/bootstrap.min.css">
+	<link rel="stylesheet" href="js/style.css">
+
+	<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="js/popper.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script src="js/accounts.js"></script>
+	<script src="js/transaction.js"></script>
+	
+	<script> 
+	accounts_t = '<accounts></accounts>'
+	transaction_t =  '<transaction></transaction>'
+	</script>
+   </head>
+   <body>
+      <div id = "route_app">
+         <h1>Routing Example</h1>
+         <p>
+            <router-link to = "/route1">Accounts</router-link>
+            <router-link to = "/route2">Transactions</router-link>
+         </p>
+         <!-- route outlet -->
+         <!-- component matched by the route will render here -->
+         <router-view></router-view>
+      </div>
+
+      <script type = "text/javascript">
+         const Route1 = { template: accounts_t
+		
+		 }
+         const Route2 = { template: transaction_t
+		
+		 }
+         const routes = [
+            { path: '/route1', component: Route1 },
+            { path: '/route2', component: Route2 }
+         ];
+         const router = new VueRouter({
+            routes // short for `routes: routes`
+         });
+         var vm = new Vue({
+            el: '#route_app',
+		  methods:{
+				ledger: function (account_code,account_name) {
+				
+					axios
+					  .get('http://127.0.0.1:5000/ledger/'+account_code)
+					  .then(response => {
+						  modalledger.items = response.data.transactionitems;
+						  modalledger.account_name = account_name
+						  $('#modelledger').modal({
+								show: true
+							}); 
+					  })
+					  .catch((error) => {
+								console.warn('Not good man :('+error);
+	
+							})
+				  }
+		  },
+            router
+         });
+
+		 
+      </script>
+   </body>
+</html>

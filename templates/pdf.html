@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Hello world</title>
+</head>
+<body>
+    <h1>Hello world</h1>
+	<button onclick="downloadPdf()">Generate PDF</button>
+	<button onclick="anotherpsdf()">Another PDF</button>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.0.272/jspdf.debug.js"></script>
+    <script type="text/javascript">
+        
+        function downloadPdf(){
+			var pdf = new jsPDF();
+			pdf.text(30, 30, 'RAMAI SHREE HARI');
+			pdf.save('A-701.pdf');
+			}
+
+
+	function anotherpsdf(){
+		var doc = new jsPDF();
+		doc.setTextColor(100);
+		doc.text(20, 20, 'This is gray.');
+
+		doc.setTextColor(150);
+		doc.text(20, 30, 'This is light gray.');
+
+		doc.setTextColor(255,0,0);
+		doc.text(20, 40, 'This is red.');
+
+		doc.setTextColor(0,255,0);
+		doc.text(20, 50, 'This is green.');
+
+		doc.setTextColor(0,0,255);
+		doc.text(20, 60, 'This is blue.');
+
+		doc.save('TA-701.pdf');
+	}
+    </script>
+</body>
+</html>

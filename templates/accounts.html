@@ -1,46 +1,22 @@
 <!DOCTYPE html>
-<style>
-table {
-    clear: both;
-    margin-top: 6px !important;
-    margin-bottom: 6px !important;
-    max-width: none !important;
-	border-spacing: 0;
-    border-collapse: collapse;
-    
-}
 
-
-th {
-     background:  linear-gradient(#0c25e8, #05116b);
-    /* border-left: 1px solid #555; */
-    border-right: 1px solid #777;
-    /* border-top: 1px solid #555; */
-    /* border-bottom: 1px solid #333; */
-    box-shadow: inset 0 1px 0 #999;
-    color: #fff;
-    font-weight: bold;
-    padding: 10px 15px;
-    position: relative;
-    text-shadow: 0 1px 0 #000;
-	border-collapse: collapse;
-}
-
-</style>
 <html lang="en">
 <head>
    <meta charset="UTF-8">
    <title>Accounts</title>
    <!-- the star of the show - the Vue library! -->
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
-   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	  <script src="js/vue.js"></script>
+	  <script src="js/axios.min.js"></script>
    
-   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-  
-  
+   
+    <link rel="stylesheet" href="js/bootstrap.min.css">
+	<link rel="stylesheet" href="js/style.css">
+
+	<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="js/popper.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+
 
    
 
@@ -110,18 +86,73 @@ th {
 				}
 			}
 		})
+
+		var modalledger = new Vue({
+		  el: '#modal_ledger',
+		  data: {
+			
+				  items: null,
+				  account_name: ''
+			}
+		})
+
+
 		var app = 	new Vue({
 			  el: '#app',
 			  data: {
 				
-				  info: null
+				  info: [],
 				
 			  },
+		  methods:{
+				ledger: function (account_code,account_name) {
+					
+					
+					axios
+					  .get('http://127.0.0.1:5000/ledger/'+account_code)
+					  .then(response => {
+						  modalledger.items = response.data.transactionitems;
+						  modalledger.account_name = account_name
+						  $('#modelledger').modal({
+								show: true
+							}); 
+					  })
+					  .catch((error) => {
+								console.warn('Not good man :('+error);
+								this.errors.push(error.message);
+							})
+				  }
+		  },
 			  mounted () {
 				axios
 				  .get('http://127.0.0.1:5000/accounts')
 				  .then(response => (this.info = response.data.accounts))
-				  
+	
+				  	/*.then(response => {
+						var dataSet = response.data.accounts
+						var table = $('#example').DataTable( {
+							data: dataSet,
+							columns: [
+								{ title: "Code" },
+								{ title: "Name" },
+								{ title: "Type" },
+								{ title: "Balance" }
+							], 
+							"lengthMenu": [[50, 100, -1], [50, 100, "All"]]
+						} );
+
+
+//
+     
+    $('#example tbody').on('dblclick', 'tr', function () {
+        var data = table.row( this ).data();
+		account_code = data[0]
+		account_name  = data[1]
+	app.ledger(account_code, account_name)
+    } );
+
+//
+					  })*/
 			  },
 			
 			})
@@ -136,7 +167,10 @@ th {
 
    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Open New Account</button>
    <div id="app">
-   <table id="example" class="table  table-bordered  " style="width:100%">
+   <!--<table id="example" class="table table-striped table-bordered" style="width:100%">
+        
+    </table>-->
+	<table id="example" class="table  table-bordered  " style="width:100%">
         <thead>
             <tr>
                 <th>Code</th>
@@ -145,7 +179,7 @@ th {
             </tr>
         </thead>
         <tbody>
-            <tr v-for="a in info" onclick="console.log('tr clicked')">
+            <tr v-for="a in info" >
                 <td>{{a[0]}}</td>
                <td>{{a[1]}}</td>
 			   <td>{{a[2]}}</td>
@@ -155,7 +189,6 @@ th {
        
     </table>
 </div>
-
 
 <div  id="modal" >
 <div   class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -194,6 +227,10 @@ th {
 			</select>
             
           </div>
+		  <div class="form-group">
+            <label for="recipient-balance" class="col-form-label">Balance:</label>
+            <input type="number" class="form-control" id="recipient-balance"  v-model="account.balance" >
+          </div>
 		  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
         <input type="submit" class="btn btn-primary"></input>
 		  
@@ -205,6 +242,50 @@ th {
   </div>
   </div>
 </div>
+
+<div  id="modal_ledger" >
+<div   class="modal fade" id="modelledger" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">{{account_name}} Ledger</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      
+	<table id="ledgertable" class="table  table-bordered  " style="width:100%">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Particular</th>
+                <th>Dr</th>
+				<th>Cr</th>
+				<th>Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="a in items" onclick="console.log('tr clicked')" >
+               <td>{{a.date}}</td>
+               <td>{{a.description}}</td>
+			   <td>{{a.dr}}</td>
+			   <td>{{a.cr}}</td>
+			   <td>{{a.balance}}</td>
+            </tr>
+            
+        </tbody>
+       
+    </table>
+
+      </div>
+      
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
 
 
 </body>

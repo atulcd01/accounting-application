@@ -1,0 +1,72 @@
+[
+    {
+        "disabled": 0,
+        "expression": "code",
+        "name": "Flat Number"
+    },
+    {
+        "disabled": 0,
+        "expression": "name",
+        "name": "Flat Owner's Name"
+    },
+    {
+        "disabled": 0,
+        "expression": "area",
+        "name": "Area( Sft )"
+    },
+    {
+        "disabled": 1,
+        "expression": "my_round(1.5 * area)",
+        "name": "REPAIR & MAINTENANCE CHARGES"
+    },
+    {
+        "disabled": 1,
+        "expression": "my_round((area*.25*62.4)/100)",
+        "name": "SINKING FUND"
+    },
+    {
+        "disabled": 1,
+        "expression": "50",
+        "name": "SERVICE CHARGES"
+    },
+    {
+        "disabled": 1,
+        "expression": "occupancy*my_round(my_round(1.5 * area)*.1)",
+        "name": "NON OCCUPACY CHARGES"
+    },
+    {
+        "disabled": 1,
+        "expression": "50*p2w",
+        "name": "PARKING CHARGES (2W)"
+    },
+    {
+        "disabled": 1,
+        "expression": "100*p4w",
+        "name": "PARKING CHARGES (4W)"
+    },
+    {
+        "disabled": 1,
+        "expression": "0",
+        "name": "INTEREST AC"
+    },
+    {
+        "disabled": 1,
+        "expression": "sum(a[5:12])",
+        "name": "Total"
+    },
+    {
+        "disabled": 1,
+        "expression": "my_round(dueamount* 0.21 /12)",
+        "name": "Interest"
+    },
+    {
+        "disabled": 1,
+        "expression": "balance",
+        "name": "Arrears"
+    },
+    {
+        "disabled": 1,
+        "expression": "sum(a[5:12]) + my_round(dueamount* 0.21 /12) + balance",
+        "name": "Total Due"
+    }
+]

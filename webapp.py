@@ -3,24 +3,29 @@ from decimal import Decimal
 import locale
 import os
 import sqlite3
+import json 
+
 
 from flask import Flask, g, jsonify, render_template, request, make_response
 from flask_cors import CORS
+from flask import send_file
 
 from ledger import Ledger, LedgerError
 
 app = Flask(__name__)
 app.config.update(dict(
-    DATABASE_URL=os.path.join(app.root_path, 'database.sqlite3')
+	DATABASE_URL_2019=os.path.join(app.root_path, 'database.sqlite32019'),
+    DATABASE_URL_2020=os.path.join(app.root_path, 'database.sqlite32020'),
+	DATABASE_URL_2021=os.path.join(app.root_path, 'database.sqlite32021')
 ))
 
 
 CORS(app) # This will enable CORS for all routes
 
 def connect_db():
-    db = sqlite3.connect(app.config['DATABASE_URL'])
+    db = sqlite3.connect(app.config['DATABASE_URL_' + '2020'])
     return db
-
+# set g.year= 2020 and pass it in create_ledger(g.year)
 
 def get_db():
     if not hasattr(g, 'db'):
@@ -71,7 +76,7 @@ def close_db(error):
         g.db.close()
 
 
-def _transaction_to_json(transaction):
+def _transaction_to_jsonold(transaction):
     return {
         'date': transaction.date.strftime('%Y-%m-%d'),
         'description': transaction.description,
@@ -81,6 +86,22 @@ def _transaction_to_json(transaction):
         ]
     }
 
+def _transaction_to_json(transaction):
+    return [transaction.date.strftime('%Y-%m-%d'),transaction.description,transaction.items[0][0],transaction.items[1][0],transaction.items[1][1]]
+
+
+
+def _transactionitems_to_json(transactionitem):
+
+
+	return {
+        'date': transactionitem.date.strftime('%Y-%m-%d'),
+        'description': transactionitem.description,
+        'amount': transactionitem.amount,
+        'dr': (transactionitem.amount if transactionitem.type == '2' else ''),
+        'cr': (transactionitem.amount if transactionitem.type == '1' else ''),
+        'balance': transactionitem.balance
+     }
 
 def _account_to_json(account, balance=None):
     result = {'code': account.code, 'name': account.name, 'type': account.type}
@@ -104,8 +125,9 @@ def _income_statement_to_json(income_statement):
         'revenue': _accounts_to_json(income_statement.revenue),
         'total_revenues': income_statement.total_revenues,
         'total_expenses': income_statement.total_expenses,
+        'net_result': income_statement.net_result
     }
-
+    print ('net_result',income_statement.net_result)
     if income_statement.net_result >= 0:
         result['net_income'] = income_statement.net_income
     else:
@@ -172,7 +194,7 @@ def create_account():
 
     try:
         get_ledger().create_account(request.json['code'], request.json['name'],
-                                    request.json['type'])
+                                    request.json['type'], request.json['balance'], request.json['phone'], request.json['email'])
         return 'Created', 201
     except LedgerError as exc:
         return str(exc), 409
@@ -195,6 +217,34 @@ def get_transactions():
             _transaction_to_json(transaction) for transaction in transactions
         ]
     })
+
+@app.route('/ledger/<code>', methods=['GET'])
+def get_accountledger(code):
+    transactionitems = get_ledger().get_accountledger(code)
+    itemslist = [_transactionitems_to_json(transactionitem) for transactionitem in transactionitems]
+    return jsonify({
+        'transactionitems': itemslist
+    })
+
+@app.route('/excel', methods=['GET'])
+def readExcel():
+    get_ledger().upload_account()
+    return 'Read Data'.format(id), 202
+
+@app.route('/bill', methods=['GET'])
+def billExcel():
+    get_ledger().monthly_bills()
+    return 'Add bill Data'.format(id), 202
+
+@app.route('/payments', methods=['GET'])
+def paymentExcel():
+    get_ledger().bills_payment()
+    return 'Add payment Data'.format(id), 202
+
+@app.route('/transactions/<sheetname>', methods=['POST'])
+def add_transaction(sheetname):
+    get_ledger().add_transaction(sheetname)
+    return 'Add Transaction Data'.format(id), 202
 
 
 @app.route('/transactions', methods=['POST'])
@@ -225,6 +275,8 @@ def record_transaction():
         return str(exc), 400
 
 
+
+
 @app.route('/balance-sheets/<date>.json', methods=['GET'])
 def get_json_balance_sheet(date):
     date = datetime.strptime(date, '%Y-%m-%d').date()
@@ -251,8 +303,8 @@ def get_html_balance_sheet(date):
 @app.route('/income-statements/<start_date>-to-<end_date>.json',
            methods=['GET'])
 def get_json_income_statement(start_date, end_date):
-    start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-    end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    start_date = datetime.strptime(start_date, '%Y-%m-%d')
+    end_date = datetime.strptime(end_date, '%Y-%m-%d')
     income_statement = get_ledger().get_income_statement(start_date, end_date)
     return jsonify(
             **_income_statement_to_json(income_statement)
@@ -268,6 +320,67 @@ def get_html_income_statement(start_date, end_date):
         'income_statement.html',
         income_statement=get_ledger().get_income_statement(start_date, end_date)
     )
+
+
+@app.route('/bills',
+           methods=['POST'])
+def save_bills():
+	json_object =json.dumps(request.json, indent = 4) 
+	print(json_object)
+	get_ledger().save_bills(json_object)
+	return 'All items must contain "amount"', 200
+
+@app.route('/bills',
+           methods=['GET'])
+def read_bills():
+	columns = get_ledger().read_bills()
+	return jsonify({
+        'columns':  [col for col in columns
+        ]
+        })
+
+@app.route('/bills/generate',
+           methods=['POST'])
+def generate_bills():
+	print('DAte ' + request.json['date'])
+	date = datetime.strptime(request.json['date'], '%Y-%m-%d').date()
+	filename = get_ledger().generate_bills_excel(date)
+	return send_file(filename,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                     attachment_filename=filename,
+                     as_attachment=True)
+
+
+@app.route('/bills/generate/pdf',
+           methods=['POST'])
+def generate_bills_pdf():
+	print('Date ' + request.json['date'])
+	date = datetime.strptime(request.json['date'], '%Y-%m-%d').date()
+	filename = get_ledger().generate_bills_pdf(date)
+	return send_file(filename,
+                     mimetype='application/pdf',
+                     attachment_filename=filename,
+                     as_attachment=True)
+
+
+
+@app.route('/bills/upload', methods = ['POST'])  
+def success():  
+    if request.method == 'POST':  
+        f = request.files['file']  
+        f.save(f.filename)  
+        get_ledger().monthly_bills(f.filename)
+        return 'Upload sucessfully', 200
+
+
+@app.route('/transactions/upload', methods = ['POST'])  
+def paybills():  
+    if request.method == 'POST':  
+        f = request.files['file']  
+        f.save(f.filename)  
+        get_ledger().bills_payment(f.filename)
+        return 'Upload sucessfully', 200
+
 
 def _build_cors_prelight_response():
     response = make_response()
