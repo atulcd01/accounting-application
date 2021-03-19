@@ -4,7 +4,7 @@ chardet==3.0.4
 Click==7.0
 clickclick==1.2.2
 connexion==2.2.0
-Django==2.2
+Django==2.2.18
 Flask==1.0.2
 flask-restplus==0.12.1
 Flask-SQLAlchemy==2.4.0
