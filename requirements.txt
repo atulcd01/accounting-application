@@ -22,7 +22,7 @@ pathlib==1.0.1
 Pillow==6.0.0
 PyJWT==1.7.1
 pytz==2018.9
-PyYAML==5.1
+PyYAML==5.4
 requests==2.21.0
 requests-oauthlib==1.2.0
 six==1.12.0
